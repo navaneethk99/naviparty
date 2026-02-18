@@ -14,6 +14,7 @@ type Room = {
   hostId: string | null;
   currentTime: number;
   isPlaying: boolean;
+  updatedAt: number;
   clients: Set<WebSocket>;
 };
 
@@ -34,6 +35,7 @@ function getRoom(roomId: string): Room {
       hostId: null,
       currentTime: 0,
       isPlaying: false,
+      updatedAt: Date.now(),
       clients: new Set(),
     };
     rooms.set(roomId, room);
@@ -61,6 +63,12 @@ function setHost(room: Room, newHost: WebSocket | null) {
     meta.isHost = client === newHost;
     safeSend(client, { type: "host", isHost: meta.isHost });
   }
+}
+
+function getCurrentTime(room: Room) {
+  if (!room.isPlaying) return room.currentTime;
+  const delta = (Date.now() - room.updatedAt) / 1000;
+  return room.currentTime + Math.max(0, delta);
 }
 
 app.prepare().then(() => {
@@ -120,7 +128,7 @@ app.prepare().then(() => {
         });
         safeSend(ws, {
           type: "state",
-          currentTime: room.currentTime,
+          currentTime: getCurrentTime(room),
           isPlaying: room.isPlaying,
         });
         return;
@@ -134,7 +142,7 @@ app.prepare().then(() => {
       if (msg?.type === "sync_request") {
         safeSend(ws, {
           type: "state",
-          currentTime: room.currentTime,
+          currentTime: getCurrentTime(room),
           isPlaying: room.isPlaying,
         });
         return;
@@ -145,6 +153,7 @@ app.prepare().then(() => {
       if (msg?.type === "play") {
         room.currentTime = Number(msg.currentTime || 0);
         room.isPlaying = true;
+        room.updatedAt = Date.now();
         broadcast(room, { type: "play", currentTime: room.currentTime }, ws);
         return;
       }
@@ -152,12 +161,14 @@ app.prepare().then(() => {
       if (msg?.type === "pause") {
         room.currentTime = Number(msg.currentTime || 0);
         room.isPlaying = false;
+        room.updatedAt = Date.now();
         broadcast(room, { type: "pause", currentTime: room.currentTime }, ws);
         return;
       }
 
       if (msg?.type === "seek") {
         room.currentTime = Number(msg.currentTime || 0);
+        room.updatedAt = Date.now();
         broadcast(room, { type: "seek", currentTime: room.currentTime }, ws);
         return;
       }
