@@ -72,12 +72,12 @@ app.prepare().then(() => {
       socket.destroy();
       return;
     }
-    wss.handleUpgrade(req, socket, head, (ws) => {
+    wss.handleUpgrade(req, socket, head, (ws: WebSocket) => {
       wss.emit("connection", ws, req);
     });
   });
 
-  wss.on("connection", (ws) => {
+  wss.on("connection", (ws: WebSocket) => {
     const clientId = randomUUID();
     clientMeta.set(ws, { clientId, roomId: null, isHost: false });
 
