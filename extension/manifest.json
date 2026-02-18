@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "NaviParty Sync",
+  "version": "0.1.0",
+  "description": "Room-based playback sync for Netflix, YouTube, and Prime Video.",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": [
+    "https://*.netflix.com/*",
+    "https://*.youtube.com/*",
+    "https://*.primevideo.com/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.netflix.com/*",
+        "https://*.youtube.com/*",
+        "https://*.primevideo.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}
