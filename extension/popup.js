@@ -8,6 +8,9 @@ const disconnectBtn = document.getElementById("disconnect");
 function updateStatus(status) {
   statusEl.textContent = status.status ? status.status : "Disconnected";
   hostEl.textContent = `Host: ${status.isHost ? "yes" : "no"}`;
+  const connected = status.status === "connected";
+  connectBtn.style.display = connected ? "none" : "inline-block";
+  disconnectBtn.style.display = connected ? "inline-block" : "none";
 }
 
 function withActiveTab(fn) {
@@ -57,3 +60,4 @@ chrome.storage.sync.get(["serverUrl", "roomId"], (res) => {
 });
 
 requestStatus();
+updateStatus({ status: "disconnected", isHost: false });
